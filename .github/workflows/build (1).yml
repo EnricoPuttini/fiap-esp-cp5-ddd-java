@@ -47,12 +47,17 @@ jobs:
               if curl -fs "$1" > /dev/null; then return 0; fi
               sleep 2
             done
-            echo "Timeout esperando $1"; return 1
+            echo "Timeout esperando $1"
+            echo "======== ULTIMAS LINHAS DE $2 ========"
+            tail -n 150 "$2" || true
+            echo "======== PROCESSOS JAVA ========"
+            ps aux | grep '[j]ava' | cut -c1-200 || true
+            return 1
           }
           java -jar fiap-bank-core-bancario/fiap-bank-core-bancario-presentation/target/*-SNAPSHOT.jar > core.log 2>&1 &
-          espera http://localhost:8080/actuator/health
+          espera http://localhost:8080/actuator/health core.log
           java -jar fiap-bank-plataforma-credito/fiap-bank-plataforma-credito-presentation/target/*-SNAPSHOT.jar > plataforma.log 2>&1 &
-          espera http://localhost:8081/actuator/health
+          espera http://localhost:8081/actuator/health plataforma.log
 
           J='Content-Type: application/json'
           echo "== Core: conta da Ana"
