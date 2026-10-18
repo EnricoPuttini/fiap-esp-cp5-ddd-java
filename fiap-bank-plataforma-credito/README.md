@@ -102,8 +102,10 @@ Detalhe importante: o Core novo devolve o campo `status`, mas o Angular lê `sta
 - **Seed:** com as regras do legado, Ana e Carlos são aprovados automaticamente e Mariana é reprovada (SCR). Nenhuma
   nasce `EM_ANALISE`; para ver a Mesa agir, crie pelo Angular uma solicitação com parcela > 30% da renda
   (ex.: R$ 50.000 em 12x com renda de R$ 5.000).
-- **Spring Cloud 2024.0.0 com Spring Boot 4.1.1:** mantido como no `pom.xml` original do professor. Se o `mvn` acusar
-  incompatibilidade do OpenFeign, ajustar `spring-cloud.version` no pom pai para a release train compatível com Boot 4.
+- **Spring Cloud 2025.1.3 (Oakwood):** o `pom.xml` original usava a versão `2024.0.0`, que é incompatível com o Spring Boot 4 (a
+  aplicação nem sobe: `NoClassDefFoundError: org.springframework.boot.autoconfigure.web.ServerProperties`, achado ao subir o
+  jar no GitHub Actions). A release train `2025.1.x` é a que suporta Boot 4.0/4.1 (a partir da 2025.1.2). Isso também vale
+  para a Mesa de Operações, que usa OpenFeign.
 
 ---
 
