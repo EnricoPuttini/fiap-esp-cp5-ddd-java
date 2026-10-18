@@ -1,0 +1,94 @@
+name: Build CP5
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        projeto: [fiap-bank-core-bancario, fiap-bank-plataforma-credito]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: mvn clean install (${{ matrix.projeto }})
+        working-directory: ${{ matrix.projeto }}
+        run: mvn -B clean install
+
+  # Sobe Core (8080) e Plataforma (8081) de verdade e exercita as rotas,
+  # inclusive as rotas legadas usadas pelo Angular e pela Mesa de Operacoes.
+  smoke:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Empacota Core e Plataforma
+        run: |
+          mvn -B -q -DskipTests -f fiap-bank-core-bancario/pom.xml clean package
+          mvn -B -q -DskipTests -f fiap-bank-plataforma-credito/pom.xml clean package
+      - name: Sobe os servicos e testa as rotas
+        run: |
+          set -e
+          espera() {
+            for i in $(seq 1 60); do
+              if curl -fs "$1" > /dev/null; then return 0; fi
+              sleep 2
+            done
+            echo "Timeout esperando $1"; return 1
+          }
+          java -jar fiap-bank-core-bancario/fiap-bank-core-bancario-presentation/target/*-SNAPSHOT.jar > core.log 2>&1 &
+          espera http://localhost:8080/actuator/health
+          java -jar fiap-bank-plataforma-credito/fiap-bank-plataforma-credito-presentation/target/*-SNAPSHOT.jar > plataforma.log 2>&1 &
+          espera http://localhost:8081/actuator/health
+
+          J='Content-Type: application/json'
+          echo "== Core: conta da Ana"
+          curl -fsS http://localhost:8080/api/v1/contas/cliente/12345678900 | tee out.json; echo
+          grep -q '12500' out.json
+
+          echo "== Plataforma (legado): listarTodasSolicitacoes"
+          curl -fsS -X POST -H "$J" http://localhost:8081/api/credito/listarTodasSolicitacoes | tee out.json; echo
+          grep -q 'Mariana Souza' out.json
+
+          echo "== Plataforma (legado): consultarClienteCore deve devolver statusConta"
+          curl -fsS -X POST -H "$J" -d '{"cpfCliente":"12345678900"}' http://localhost:8081/api/credito/consultarClienteCore | tee out.json; echo
+          grep -q 'statusConta' out.json
+
+          echo "== Plataforma (legado): solicitarCredito que vai para a Mesa"
+          curl -fsS -X POST -H "$J" -d '{"cpfCliente":"12345678900","nomeCliente":"Ana Silva","tipoCredito":"EMPRESTIMO_PESSOAL","valorSolicitado":50000,"quantidadeParcelas":12,"rendaMensal":5000}' http://localhost:8081/api/credito/solicitarCredito | tee out.json; echo
+          grep -q 'EM_ANALISE' out.json
+          ID=$(grep -o '"id":[0-9]*' out.json | head -1 | cut -d: -f2)
+
+          echo "== Plataforma (legado): aprovarSolicitacao $ID"
+          curl -fsS -X POST -H "$J" -d "{\"solicitacaoId\":$ID,\"parecerOperador\":\"ok\"}" http://localhost:8081/api/credito/aprovarSolicitacao | tee out.json; echo
+          grep -q 'APROVADO' out.json
+
+          echo "== Plataforma (REST): GET /api/v1/solicitacoes-credito/$ID"
+          curl -fsS http://localhost:8081/api/v1/solicitacoes-credito/$ID | tee out.json; echo
+          grep -q 'APROVADO' out.json
+
+          echo "== Plataforma (REST): id inexistente deve dar 404"
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8081/api/v1/solicitacoes-credito/9999)" = "404"
+
+          echo "== Plataforma (REST): payload invalido deve dar 400"
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST -H "$J" -d '{}' http://localhost:8081/api/v1/solicitacoes-credito)" = "400"
+
+          echo "SMOKE OK"
+      - name: Logs dos servicos
+        if: always()
+        run: |
+          echo "---- core.log ----"; tail -n 80 core.log || true
+          echo "---- plataforma.log ----"; tail -n 80 plataforma.log || true
