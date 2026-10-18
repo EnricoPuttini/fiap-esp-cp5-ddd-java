@@ -1,0 +1,66 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>br.com.fiap.bank</groupId>
+        <artifactId>fiap-bank-plataforma-credito</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>fiap-bank-plataforma-credito-infrastructure</artifactId>
+    <packaging>jar</packaging>
+
+    <name>FIAP Bank - Plataforma de Crédito - Infrastructure</name>
+    <description>Adaptadores: entidades JPA, repositórios Spring Data, Repository Adapter e clients de comunicação (Core Bancário via OpenFeign, SCR, Bureau e CRM). Depende somente de domain.</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>br.com.fiap.bank</groupId>
+            <artifactId>fiap-bank-plataforma-credito-domain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce-infrastructure-boundaries</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <bannedDependencies>
+                                    <searchTransitive>false</searchTransitive>
+                                    <excludes>
+                                        <exclude>br.com.fiap.bank:fiap-bank-plataforma-credito-application</exclude>
+                                        <exclude>br.com.fiap.bank:fiap-bank-plataforma-credito-presentation</exclude>
+                                    </excludes>
+                                    <message>O módulo infrastructure só pode depender de domain.</message>
+                                </bannedDependencies>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
