@@ -1,76 +1,132 @@
-# FIAP Bank - Esteira de Crédito 🏦💳
+# FIAP Bank - Core Bancário 🏦
 
-Monorepo contendo o ecossistema completo da **Esteira de Crédito** do FIAP Bank, composto por quatro aplicações integradas: Core Bancário, Plataforma de Crédito, Mesa de Operações e Internet Banking Mobile.
-
----
-
-## 📁 Estrutura do Workspace e Documentação
-
-Cada projeto possui seu próprio arquivo `README.md` detalhando tecnologias, arquitetura, rotas e instruções de execução:
-
-| Projeto | Tecnologia | Porta | Descrição & Documentação |
-| :--- | :--- | :---: | :--- |
-| **`fiap-bank-core-bancario`** | Java 21, Spring Boot, JPA, DDD Multi-Módulo | `8080` | [README do Core Bancário](./fiap-bank-core-bancario/README.md) |
-| **`fiap-bank-plataforma-credito`** | Java 21, Spring Boot, Spring Cloud Feign | `8081` | [README da Plataforma de Crédito](./fiap-bank-plataforma-credito/README.md) |
-| **`fiap-bank-mesa-operacoes-credito`** | Java 21, Spring Boot, Thymeleaf, Feign | `8082` | [README da Mesa de Operações](./fiap-bank-mesa-operacoes-credito/README.md) |
-| **`fiap-bank-internet-banking-mobile`** | Angular 17+, TypeScript, CSS Responsivo | `4200` | [README do Mobile Angular](./fiap-bank-internet-banking-mobile/README.md) |
+Microsserviço de **Core Bancário** responsável pela gestão central de clientes e contas correntes/poupança do FIAP Bank. O projeto segue os princípios de **Domain-Driven Design (DDD)** com segregação estrita em arquitetura multi-módulo Maven.
 
 ---
 
-## 🚦 Ordem Recomendada de Execução
+## 🛠️ Tecnologias Utilizadas
 
-Para testar o fluxo de ponta a ponta com todas as integrações ativas, inicie os serviços na seguinte ordem:
+- **Java 21**
+- **Spring Boot 4.1+**
+- **Spring Data JPA**
+- **H2 Database** (em memória)
+- **Maven** (projeto multi-módulo)
 
-### 1. Iniciar o Core Bancário (`Porta 8080`)
-Responsável pela gestão de clientes e contas bancárias.
+---
+
+## 📋 Pré-requisitos
+
+- **Java JDK 21** instalado e configurado nas variáveis de ambiente.
+- **Apache Maven 3.9+** instalado.
+
+---
+
+## 🚀 Como Executar a Aplicação
+
+### 1. Compilar os módulos Maven
+
+Na raiz do diretório `fiap-bank-core-bancario`:
+
 ```bash
-cd fiap-bank-core-bancario
 mvn clean install
+```
+
+### 2. Iniciar a aplicação
+
+Você pode iniciar o serviço diretamente da raiz do módulo:
+
+```bash
 mvn -pl fiap-bank-core-bancario-presentation spring-boot:run
 ```
-- API Base: `http://localhost:8080/api/v1`
-- H2 Console: `http://localhost:8080/h2-console`
 
----
+Ou navegando até o módulo de apresentação:
 
-### 2. Iniciar a Plataforma de Crédito (`Porta 8081`)
-Motor de decisão e esteira, integrado via Spring Cloud OpenFeign ao Core Bancário.
 ```bash
-cd fiap-bank-plataforma-credito
-mvn clean compile
+cd fiap-bank-core-bancario-presentation
 mvn spring-boot:run
 ```
-- API Base: `http://localhost:8081/api/credito`
-- H2 Console: `http://localhost:8081/h2-console`
 
----
+### 3. Executar via arquivo JAR
 
-### 3. Iniciar a Mesa de Operações (`Porta 8082`)
-Front-end Web Thymeleaf para analistas de risco aprovarem ou reprovarem propostas.
+Após o empacotamento com `mvn clean package`:
+
 ```bash
-cd fiap-bank-mesa-operacoes-credito
-mvn clean compile
-mvn spring-boot:run
+java -jar fiap-bank-core-bancario-presentation/target/fiap-bank-core-bancario-presentation-1.0.0-SNAPSHOT.jar
 ```
-- Painel Web do Operador: `http://localhost:8082`
+
+A aplicação estará acessível em: **`http://localhost:8080`**
 
 ---
 
-### 4. Iniciar o Internet Banking Mobile (`Porta 4200`)
-Front-end Angular responsivo voltado ao cliente final para simulação e submissão de crédito.
-```bash
-cd fiap-bank-internet-banking-mobile
-npm install
-npm run start
-```
-- App Mobile Web: `http://localhost:4200`
+## 🗄️ Console do Banco de Dados H2
+
+O banco de dados H2 em memória pode ser acessado pelo navegador:
+
+- **URL:** `http://localhost:8080/h2-console`
+- **JDBC URL:** `jdbc:h2:mem:corebancariodb`
+- **User Name:** `sa`
+- **Password:** *(deixe em branco)*
 
 ---
 
-## 🧪 Dados Pré-Carregados para Testes
+## 📌 Dados Iniciais (Carga Automática)
 
-Os serviços iniciam automaticamente com dados pré-populados para testes:
+Ao subir o serviço, os seguintes dados são carregados automaticamente via `DataInitializer`:
 
-- **Cliente 1 (Aprovável):** CPF `12345678900` | Nome: Ana Silva | Renda: R$ 7.500,00 | Saldo: R$ 12.500,00
-- **Cliente 2 (Aprovável):** CPF `98765432100` | Nome: Carlos Eduardo Oliveira | Renda: R$ 12.000,00 | Saldo: R$ 45.800,50
-- **Cliente 3 (Reprovado SCR):** CPF `55544433399` | Nome: Mariana Souza | Restrição ativa no SCR
+- **Cliente 1:** Ana Silva | CPF: `12345678900` | Agência: `0001` | Saldo: `R$ 12.500,00`
+- **Cliente 2:** Carlos Eduardo Oliveira | CPF: `98765432100` | Agência: `0001` | Saldo: `R$ 45.800,50`
+
+> O número da conta é gerado automaticamente pelo servidor na abertura (regra REST: o cliente não
+> escolhe o identificador do recurso). Os outros serviços do ecossistema buscam a conta pelo CPF do
+> titular (`GET /api/v1/contas/cliente/{cpf}`), nunca pelo número fixo, então isso não quebra nenhuma
+> integração.
+
+---
+
+## 🧱 Decisões de Design (além do que a especificação define explicitamente)
+
+Algumas escolhas de implementação que não estavam 100% definidas no enunciado/anexos e que valem
+documentar para a banca:
+
+- **CPF sem validação de dígito verificador:** o anexo 10.3 pede apenas "11 dígitos numéricos ou
+  máscara canônica". Os CPFs de teste usados no ecossistema (`12345678900`, `98765432100`) não são
+  algoritmicamente válidos pela Receita Federal, então o Value Object `Cpf` valida só o formato, não
+  o checksum - para não quebrar a carga de dados compartilhada entre os 4 projetos.
+- **Um CPF → uma conta:** o endpoint `GET /api/v1/contas/cliente/{cpf}` é descrito no singular
+  ("a conta vinculada ao CPF"), então `ContaRepository.findByCpfCliente` retorna `Optional<Conta>` e
+  `POST /api/v1/contas` rejeita abrir uma segunda conta para o mesmo CPF (`409 Conflict`).
+- **`tipoConta` trafega como `String` no `CriarContaRequest`**, não como o enum de domínio: isso evita
+  que a camada `presentation` precise importar um tipo de `domain` para montar o payload, reforçando o
+  isolamento físico até o nível de `import`, não só de `pom.xml`.
+- **Exceptions espelhadas em `application.exception`:** toda exception de negócio que cruza a fronteira
+  até `presentation` tem um equivalente em `application`, para que o `GlobalExceptionHandler` nunca
+  precise importar `domain.exception` diretamente.
+- **`maven-enforcer-plugin`** está configurado em cada submódulo com `bannedDependencies`, barrando a
+  declaração de dependências fora da hierarquia permitida (`presentation → application → infrastructure
+  e domain → domain`), conforme a Regra 1 do Checkpoint 5.
+
+---
+
+## 🌐 Endpoints RESTful Principais
+
+### Clientes (`/api/v1/clientes`)
+
+| Método | Endpoint | Descrição |
+| :--- | :--- | :--- |
+| `GET` | `/api/v1/clientes` | Lista todos os clientes cadastrados |
+| `GET` | `/api/v1/clientes/{id}` | Busca cliente por UUID |
+| `GET` | `/api/v1/clientes/cpf/{cpf}` | Busca cliente por CPF |
+| `POST` | `/api/v1/clientes` | Cadastra um novo cliente |
+| `PUT` | `/api/v1/clientes/{id}` | Atualiza dados do cliente por UUID |
+| `DELETE` | `/api/v1/clientes/{id}` | Remove um cliente por UUID |
+
+### Contas Bancárias (`/api/v1/contas`)
+
+| Método | Endpoint | Descrição |
+| :--- | :--- | :--- |
+| `GET` | `/api/v1/contas` | Lista todas as contas bancárias |
+| `GET` | `/api/v1/contas/{numeroConta}` | Busca detalhes de uma conta por número |
+| `GET` | `/api/v1/contas/cliente/{cpf}` | Busca conta bancária associada a um CPF |
+| `POST` | `/api/v1/contas` | Abre uma nova conta bancária para um cliente |
+| `PUT` | `/api/v1/contas/{numeroConta}/saldo` | Atualiza o saldo da conta (depósito ou saque) |
+| `DELETE` | `/api/v1/contas/{numeroConta}` | Encerra uma conta bancária |
