@@ -1,0 +1,59 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>br.com.fiap.bank</groupId>
+        <artifactId>fiap-bank-core-bancario</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>fiap-bank-core-bancario-domain</artifactId>
+    <packaging>jar</packaging>
+
+    <name>FIAP Bank - Core Bancário - Domain</name>
+    <description>
+        Camada de domínio pura: Entidades, Value Objects e interfaces de Repositório.
+        Proibido: Spring Web, Spring Data JPA, anotações de persistência relacional
+        (@Entity, @Table, @Column, @Id) ou qualquer outra dependência de framework.
+    </description>
+
+    <!-- Nenhuma <dependencies> de produção: o domínio é Java puro. -->
+
+    <build>
+        <plugins>
+            <!--
+                Regra 1 do CP5: o enforcer falha o build se, por engano, alguém
+                adicionar QUALQUER dependência de produção a este módulo (framework
+                ou outro módulo do projeto). O domínio deve permanecer isolado.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce-domain-purity</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <bannedDependencies>
+                                    <excludes>
+                                        <exclude>*:*</exclude>
+                                    </excludes>
+                                    <message>
+                                        O módulo domain deve permanecer 100% puro: nenhuma dependência de
+                                        produção é permitida (nem frameworks, nem outros módulos do projeto).
+                                    </message>
+                                </bannedDependencies>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
