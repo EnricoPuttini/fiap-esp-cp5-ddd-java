@@ -1,5 +1,6 @@
 package br.com.fiap.bank.core.presentation.controller;
 
+import lombok.RequiredArgsConstructor;
 import br.com.fiap.bank.core.application.dto.AtualizarClienteRequest;
 import br.com.fiap.bank.core.application.dto.ClienteResponse;
 import br.com.fiap.bank.core.application.dto.CriarClienteRequest;
@@ -23,15 +24,12 @@ import org.springframework.web.bind.annotation.RestController;
  * de endpoints do anexo 10.1 do Checkpoint 5: substantivo no plural,
  * sem verbos de ação na URI, intenção operacional delegada ao verbo HTTP.
  */
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/clientes")
 public class ClienteController {
 
     private final ClienteService clienteService;
-
-    public ClienteController(ClienteService clienteService) {
-        this.clienteService = clienteService;
-    }
 
     @GetMapping
     public ResponseEntity<List<ClienteResponse>> listar() {

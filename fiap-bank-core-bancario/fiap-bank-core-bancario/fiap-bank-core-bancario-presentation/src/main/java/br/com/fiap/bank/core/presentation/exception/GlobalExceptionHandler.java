@@ -10,9 +10,11 @@ import br.com.fiap.bank.core.application.exception.SaldoInsuficienteAppException
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 /**
  * Tratamento global de exceções: converte exceptions de negócio da camada
@@ -65,8 +67,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(erro);
     }
 
+    @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<ErrorResponse> handlePayloadIlegivel(Exception ex) {
+        ErrorResponse erro = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Requisição Inválida",
+                "Corpo ou parâmetro da requisição está malformado ou com tipo incorreto.");
+        return ResponseEntity.badRequest().body(erro);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenerico(Exception ex) {
+        // Erros do proprio Spring MVC (rota inexistente, metodo nao suportado, midia invalida...)
+        // ja carregam o status correto: preservamos em vez de converter tudo em 500.
+        if (ex instanceof org.springframework.web.ErrorResponse springError) {
+            int status = springError.getStatusCode().value();
+            ErrorResponse erro = new ErrorResponse(status, HttpStatus.valueOf(status).getReasonPhrase(),
+                    springError.getBody().getDetail());
+            return ResponseEntity.status(status).body(erro);
+        }
         ErrorResponse erro = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(), "Erro Interno",
                 "Ocorreu um erro inesperado ao processar a requisição.");

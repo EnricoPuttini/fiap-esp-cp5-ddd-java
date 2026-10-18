@@ -1,5 +1,6 @@
 package br.com.fiap.bank.core.application.service;
 
+import lombok.RequiredArgsConstructor;
 import br.com.fiap.bank.core.application.dto.AtualizarSaldoRequest;
 import br.com.fiap.bank.core.application.dto.ContaResponse;
 import br.com.fiap.bank.core.application.dto.CriarContaRequest;
@@ -33,16 +34,12 @@ import org.springframework.transaction.annotation.Transactional;
  * {@code application.exception}, para que a camada de apresentação nunca
  * precise importar {@code domain.exception} diretamente.
  */
+@RequiredArgsConstructor
 @Service
 public class ContaService {
 
     private final ContaRepository contaRepository;
     private final ClienteRepository clienteRepository;
-
-    public ContaService(ContaRepository contaRepository, ClienteRepository clienteRepository) {
-        this.contaRepository = contaRepository;
-        this.clienteRepository = clienteRepository;
-    }
 
     @Transactional(readOnly = true)
     public List<ContaResponse> listar() {

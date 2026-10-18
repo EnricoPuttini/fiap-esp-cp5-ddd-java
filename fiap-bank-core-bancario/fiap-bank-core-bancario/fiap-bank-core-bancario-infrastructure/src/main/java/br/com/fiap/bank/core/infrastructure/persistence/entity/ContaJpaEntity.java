@@ -2,8 +2,6 @@ package br.com.fiap.bank.core.infrastructure.persistence.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -28,7 +26,6 @@ public class ContaJpaEntity {
     @Column(nullable = false, length = 4)
     private String agencia;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "tipo_conta", nullable = false, length = 20)
     private String tipoConta;
 
@@ -38,7 +35,6 @@ public class ContaJpaEntity {
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal saldo;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
     private String status;
 

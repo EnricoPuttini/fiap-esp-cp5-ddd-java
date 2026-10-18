@@ -1,5 +1,6 @@
 package br.com.fiap.bank.core.presentation.config;
 
+import lombok.RequiredArgsConstructor;
 import br.com.fiap.bank.core.application.dto.CriarClienteRequest;
 import br.com.fiap.bank.core.application.dto.CriarContaRequest;
 import br.com.fiap.bank.core.application.service.ClienteService;
@@ -15,16 +16,12 @@ import org.springframework.stereotype.Component;
  * (Mesa de Operações e Internet Banking Mobile) encontrem os mesmos
  * CPFs de demonstração que já usam hoje.
  */
+@RequiredArgsConstructor
 @Component
-public class DataInitializer implements CommandLineRunner {
+public class DataInitializer {
 
     private final ClienteService clienteService;
     private final ContaService contaService;
-
-    public DataInitializer(ClienteService clienteService, ContaService contaService) {
-        this.clienteService = clienteService;
-        this.contaService = contaService;
-    }
 
     @Override
     public void run(String... args) {

@@ -1,5 +1,6 @@
 package br.com.fiap.bank.core.presentation.controller;
 
+import lombok.RequiredArgsConstructor;
 import br.com.fiap.bank.core.application.dto.AtualizarSaldoRequest;
 import br.com.fiap.bank.core.application.dto.ContaResponse;
 import br.com.fiap.bank.core.application.dto.CriarContaRequest;
@@ -23,15 +24,12 @@ import org.springframework.web.bind.annotation.RestController;
  * ({@code /contas/{numeroConta}/saldo}) via PUT, suportando crédito e
  * débito atômicos.
  */
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/contas")
 public class ContaController {
 
     private final ContaService contaService;
-
-    public ContaController(ContaService contaService) {
-        this.contaService = contaService;
-    }
 
     @GetMapping
     public ResponseEntity<List<ContaResponse>> listar() {

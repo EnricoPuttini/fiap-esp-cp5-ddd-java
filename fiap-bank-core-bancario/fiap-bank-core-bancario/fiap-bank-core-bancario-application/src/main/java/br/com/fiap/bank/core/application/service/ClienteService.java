@@ -1,5 +1,6 @@
 package br.com.fiap.bank.core.application.service;
 
+import lombok.RequiredArgsConstructor;
 import br.com.fiap.bank.core.application.dto.AtualizarClienteRequest;
 import br.com.fiap.bank.core.application.dto.ClienteResponse;
 import br.com.fiap.bank.core.application.dto.CriarClienteRequest;
@@ -24,14 +25,11 @@ import org.springframework.transaction.annotation.Transactional;
  * em {@code application.exception}, para que a camada de apresentação
  * nunca precise importar {@code domain.exception}.
  */
+@RequiredArgsConstructor
 @Service
 public class ClienteService {
 
     private final ClienteRepository clienteRepository;
-
-    public ClienteService(ClienteRepository clienteRepository) {
-        this.clienteRepository = clienteRepository;
-    }
 
     @Transactional(readOnly = true)
     public List<ClienteResponse> listar() {

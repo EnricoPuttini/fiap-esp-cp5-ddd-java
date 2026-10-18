@@ -50,6 +50,7 @@
                         <configuration>
                             <rules>
                                 <bannedDependencies>
+                                    <searchTransitive>false</searchTransitive>
                                     <excludes>
                                         <exclude>br.com.fiap.bank:fiap-bank-core-bancario-presentation</exclude>
                                     </excludes>

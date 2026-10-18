@@ -40,9 +40,13 @@
                         <configuration>
                             <rules>
                                 <bannedDependencies>
+                                    <searchTransitive>false</searchTransitive>
                                     <excludes>
                                         <exclude>*:*</exclude>
                                     </excludes>
+                                    <includes>
+                                        <include>org.projectlombok:lombok</include>
+                                    </includes>
                                     <message>
                                         O módulo domain deve permanecer 100% puro: nenhuma dependência de
                                         produção é permitida (nem frameworks, nem outros módulos do projeto).

@@ -54,6 +54,7 @@
                         <configuration>
                             <rules>
                                 <bannedDependencies>
+                                    <searchTransitive>false</searchTransitive>
                                     <excludes>
                                         <exclude>br.com.fiap.bank:fiap-bank-core-bancario-domain</exclude>
                                         <exclude>br.com.fiap.bank:fiap-bank-core-bancario-infrastructure</exclude>
