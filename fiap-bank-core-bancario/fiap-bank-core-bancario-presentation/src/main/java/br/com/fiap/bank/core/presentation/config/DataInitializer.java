@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
  */
 @RequiredArgsConstructor
 @Component
-public class DataInitializer {
+public class DataInitializer implements CommandLineRunner {
 
     private final ClienteService clienteService;
     private final ContaService contaService;
